@@ -5,38 +5,33 @@ on:
     tags: "v*"
 
 jobs:
-  build:  
+  build:
     runs-on: ubuntu-latest
     permissions:
         packages: write
         contents: read
-    
-    steps: 
+
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-tags: true
-
-      - name: Get right version from tag
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
+        
       - name: Log in to GitHub Container Registry
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      
-      - name: Build Docker image without cache
-        run: |
-          docker build --no-cache -t ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }} .
-      
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }}
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Pull latest image (test if available)
+      - name: Pull Docker image with the correct tag
         run: |
-          docker pull ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }}
+          docker pull ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }}
+        
+      - name: Build Docker image
+        run: |
+          docker build --no-cache -t ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }} .
+          
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }}
 
       - name: Run Ansible Playbook for Deployment
         run: |
-          ansible-playbook deploy-playbook.yml --extra-vars "new_version=${{ env.VERSION }}"
-
+          ansible-playbook deploy-playbook.yml --extra-vars "new_version=${{ github.ref_name }}"
