@@ -30,4 +30,13 @@ jobs:
       
       - name: Push Docker image to GHCR
         run: |
-          docker push ghcr.io/${{ github.repository }}/nginx-image:$ {{ env.VERSION }}
+          docker push ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }}
+
+      - name: Pull latest image (test if available)
+        run: |
+          docker pull ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }}
+
+      - name: Run Ansible Playbook for Deployment
+        run: |
+          ansible-playbook deploy-playbook.yml --extra-vars "new_version=${{ env.VERSION }}"
+
