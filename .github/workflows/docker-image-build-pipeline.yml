@@ -2,11 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags: "v*"
 
 jobs:
   build:  
@@ -18,6 +14,11 @@ jobs:
     steps: 
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-tags: true
+
+      - name: Get right version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         run: |
@@ -25,8 +26,8 @@ jobs:
       
       - name: Build Docker image without cache
         run: |
-          docker build --no-cache -t ghcr.io/${{ github.repository }}/nginx-image:v1 .
+          docker build --no-cache -t ghcr.io/${{ github.repository }}/nginx-image:${{ env.VERSION }} .
       
       - name: Push Docker image to GHCR
         run: |
-          docker push ghcr.io/${{ github.repository }}/nginx-image:v1
+          docker push ghcr.io/${{ github.repository }}/nginx-image:$ {{ env.VERSION }}
