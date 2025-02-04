@@ -1,0 +1,35 @@
+---
+- name: Rolling update on Kubernetes deployment using kubectl
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Set image version from environment variable in workflows 
+      set_fact:
+        new_version: "{{ lookup('env', 'VERSION') }}"  # Taking VERSION from .github/workflows/docker-image-build-pipeline.yml 
+
+    - name: Update image
+      command: |
+        kubectl set image deployment/nginx-deployment nginx=ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }}
+      register: update_result
+      failed_when: update_result.rc != 0
+
+    - name: Wait for the pods to update
+      command: |
+        kubectl rollout status deployment/nginx-deployment
+      register: rollout_status
+      until: rollout_status.rc == 0
+      retries: 10
+      delay: 15
+      failed_when: rollout_status.rc != 0
+
+    - name: Rollback if deployment fails
+      command: |
+        kubectl rollout undo deployment/nginx-deployment
+      when: rollout_status.rc != 0
+      notify:
+        - Notify rollback
+
+  handlers:
+    - name: Notify rollback
+      debug:
+        msg: "Rolling update failed. Rolled back to the previous stable version."
