@@ -5,7 +5,7 @@
   tasks:
     - name: Set image version from environment variable in workflows 
       set_fact:
-        new_version: "{{ lookup('env', 'VERSION') }}"  # Taking VERSION from .github/workflows/docker-image-build-pipeline.yml 
+        new_version: "{{ new_version }}" 
 
     - name: Update image
       command: |
