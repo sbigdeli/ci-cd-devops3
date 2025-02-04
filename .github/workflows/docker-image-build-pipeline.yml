@@ -45,7 +45,8 @@ jobs:
 
       - name: Set Kubeconfig
         run: |
-          echo $(minikube kubeconfig) > $HOME/.kube/config
+          mkdir -p $HOME/.kube
+          minikube update-context
 
       - name: Verify kubectl context
         run: |
