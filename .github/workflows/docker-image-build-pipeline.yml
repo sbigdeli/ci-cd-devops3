@@ -55,6 +55,11 @@ jobs:
         run: |
           kubectl config use-context minikube
 
+      - name: Deploy to Minikube using kubectl
+        run: |
+          kubectl apply -f nginx-deployment.yml
+          kubectl apply -f nginx-service.yml
+
       - name: Pull Docker image with the correct tag
         run: |
           docker pull ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }}
