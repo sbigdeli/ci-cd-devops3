@@ -41,7 +41,7 @@ minikube dashboard
 ## 3. Change to a new version
 
 ```bash
-ansible-playbook deploy-playbook.yml --extra-vars "new_version=v15.0.0" # See tags, try a tag that's not tagged.
+ansible-playbook deploy-playbook.yml --extra-vars "new_version=v1.0.0" # See tags, try a tag that's not tagged.
 ```
 
 ## 4. Check if the version is updated
