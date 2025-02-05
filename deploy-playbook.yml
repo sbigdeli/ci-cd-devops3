@@ -7,6 +7,18 @@
       set_fact:
         new_version: "{{ new_version }}" 
 
+    - name: Check if image exists in Docker registry
+      command: "docker pull ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }}"
+      register: pull_image
+      ignore_errors: yes
+      failed_when: pull_image.rc != 0
+      changed_when: false
+
+    - name: Fail if image does not exist
+      fail:
+        msg: "Docker image ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }} not found!"
+      when: pull_image.rc != 0
+      
     - name: Update image
       command: |
         kubectl set image deployment/nginx-deployment nginx=ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }}
