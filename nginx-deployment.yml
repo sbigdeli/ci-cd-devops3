@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:v3.0.0
+        image: ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:v1.0.0
         ports:
         - containerPort: 80
