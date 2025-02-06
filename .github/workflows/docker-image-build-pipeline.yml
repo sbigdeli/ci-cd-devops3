@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Test and Push Docker Image
 
 on:
   push:
@@ -23,6 +23,25 @@ jobs:
       - name: Build Docker image
         run: |
           docker build --no-cache -t ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }} .
+
+      - name: Run container for testing
+        run: |
+          docker run -d --rm -p 8080:80 --name test-nginx ghcr.io/${{ github.repository }}/nginx-image:${{ github.ref_name }}
+
+      - name: Loop and check status on container
+        run: |
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 || echo "000")
+            echo "Attempt $i - HTTP Status: $STATUS"
+            if [ "$STATUS" == "200" ]; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Service did not start in time" && exit 1
+
+      - name: Stop test container
+        run: docker stop test-nginx
 
       - name: Push Docker image
         run: |
