@@ -5,10 +5,11 @@
   tasks:
     - name: Set image version from environment variable in workflows 
       set_fact:
-        new_version: "{{ new_version }}" 
+        new_version: "{{ new_version }}"
+        ghcr_package: "ghcr.io/sbigdeli/ci-cd-devops3/nginx-image"
 
     - name: Check if image exists in Docker registry
-      command: "docker pull ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }}"
+      command: "docker pull {{ ghcr_package }}:{{ new_version }}"
       register: pull_image
       ignore_errors: yes
       failed_when: pull_image.rc != 0
@@ -16,12 +17,12 @@
 
     - name: Fail if image does not exist
       fail:
-        msg: "Docker image ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }} not found!"
+        msg: "Docker image {{ ghcr_package }}:{{ new_version }} not found!"
       when: pull_image.rc != 0
       
     - name: Update image
       command: |
-        kubectl set image deployment/nginx-deployment nginx=ghcr.io/sbigdeli/ci-cd-devops3/nginx-image:{{ new_version }}
+        kubectl set image deployment/nginx-deployment nginx={{ ghcr_package }}:{{ new_version }}
       register: update_result
       failed_when: update_result.rc != 0
 
